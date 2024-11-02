@@ -17,25 +17,66 @@
                 <li>在你的网页中添加以下代码：</li>
             </ol>
             <pre><code>
-// 等待代理就绪
-await window.proxyReady();
+// 等待代理API可用
+function waitForProxy(timeout = 5000, interval = 100) {
+    const startTime = Date.now();
+    
+    return new Promise((resolve, reject) => {
+        const check = () => {
+            // 检查是否超时
+            if (Date.now() - startTime > timeout) {
+                reject(new Error('等待代理API超时'));
+                return;
+            }
 
-// 发起代理请求
-const response = await window.proxyRequest({
-    url: 'https://api.example.com/data',
-    method: 'GET',
-    headers: {
-        'Accept': 'application/json'
-    },
-    targetDomain: 'example.com' // 指定目标域名
-});
+            // 检查API是否可用
+            if (typeof window.proxyRequest === 'function') {
+                resolve();
+                return;
+            }
+
+            // 继续等待
+            setTimeout(check, interval);
+        };
+
+        check();
+    });
+}
+
+// 使用示例
+async function example() {
+    try {
+        // 等待代理API就绪
+        await waitForProxy();
+
+        // 发起代理请求
+        const response = await window.proxyRequest({
+            url: 'https://api.example.com/data',
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
+            },
+            targetDomain: 'example.com' // 指定目标域名
+        });
+
+        console.log('Response:', response);
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
             </code></pre>
         </section>
 
         <section>
             <h2>API 详细说明</h2>
-            <h3>window.proxyReady()</h3>
-            <p>返回一个 Promise，用于等待代理功能初始化完成。建议在使用 proxyRequest 之前先调用此方法。</p>
+            
+            <h3>waitForProxy(timeout = 5000, interval = 100)</h3>
+            <p>等待代理API可用的辅助函数。</p>
+            <ul>
+                <li><code>timeout</code>: 超时时间（毫秒），默认5秒</li>
+                <li><code>interval</code>: 检查间隔（毫秒），默认100毫秒</li>
+            </ul>
+            <p>返回一个 Promise，在API可用时 resolve，超时时 reject。</p>
 
             <h3>window.proxyRequest(options)</h3>
             <p>发起代理请求的主要方法。参数说明：</p>
@@ -49,16 +90,77 @@ const response = await window.proxyRequest({
         </section>
 
         <section>
-            <h2>常见问题</h2>
-            <h3>1. 请求失败，提示"未找到xxx的页面"</h3>
-            <p>解决方案：确保已打开并登录了目标网站。</p>
+            <h2>注意事项</h2>
+            <div class="warning">
+                <h3>关于代理API的初始化</h3>
+                <p>由于浏览器扩展注入脚本的时机不确定，<code>window.proxyRequest</code> 可能不会立即可用。
+                   因此，强烈建议使用 <code>waitForProxy</code> 函数等待API就绪后再使用。</p>
+            </div>
 
-            <h3>2. window.proxyRequest is not a function</h3>
-            <p>解决方案：确保等待 proxyReady() 完成后再调用 proxyRequest。</p>
+            <h3>常见问题</h3>
+            <div class="faq">
+                <h4>1. 请求失败，提示"未找到xxx的页面"</h4>
+                <p>解决方案：确保已打开并登录了目标网站。</p>
 
-            <h3>3. 跨域错误</h3>
-            <p>解决方案：确保正确指定了 targetDomain 参数。</p>
+                <h4>2. window.proxyRequest is not a function</h4>
+                <p>解决方案：使用 waitForProxy 函数等待API就绪。</p>
+
+                <h4>3. 跨域错误</h4>
+                <p>解决方案：确保正确指定了 targetDomain 参数。</p>
+            </div>
+        </section>
+
+        <section>
+            <h2>最佳实践</h2>
+            <ul>
+                <li>总是使用 waitForProxy 等待API就绪</li>
+                <li>设置合理的超时时间</li>
+                <li>添加适当的错误处理</li>
+                <li>在发起请求前确保目标网站已打开</li>
+            </ul>
         </section>
     </div>
+
+    <style>
+        .warning {
+            background: #fff3e0;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #ff9800;
+        }
+
+        .warning h3 {
+            color: #f57c00;
+            margin-top: 0;
+        }
+
+        .faq {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .faq h4 {
+            color: #1a73e8;
+            margin: 15px 0 5px 0;
+        }
+
+        code {
+            background: #f5f5f5;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        pre code {
+            display: block;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+    </style>
 </body>
 </html> 

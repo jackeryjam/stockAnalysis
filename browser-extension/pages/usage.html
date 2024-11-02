@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Request Proxy - 使用说明</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Request Proxy 使用说明</h1>
+        
+        <section>
+            <h2>基本使用步骤</h2>
+            <ol>
+                <li>确保已安装本扩展</li>
+                <li>打开并登录目标网站（例如：quote.eastmoney.com）</li>
+                <li>在你的网页中添加以下代码：</li>
+            </ol>
+            <pre><code>
+// 等待代理就绪
+await window.proxyReady();
+
+// 发起代理请求
+const response = await window.proxyRequest({
+    url: 'https://api.example.com/data',
+    method: 'GET',
+    headers: {
+        'Accept': 'application/json'
+    },
+    targetDomain: 'example.com' // 指定目标域名
+});
+            </code></pre>
+        </section>
+
+        <section>
+            <h2>API 详细说明</h2>
+            <h3>window.proxyReady()</h3>
+            <p>返回一个 Promise，用于等待代理功能初始化完成。建议在使用 proxyRequest 之前先调用此方法。</p>
+
+            <h3>window.proxyRequest(options)</h3>
+            <p>发起代理请求的主要方法。参数说明：</p>
+            <ul>
+                <li><code>url</code>: 请求的目标URL（必需）</li>
+                <li><code>method</code>: 请求方法，默认为 'GET'</li>
+                <li><code>headers</code>: 请求头对象</li>
+                <li><code>targetDomain</code>: 目标域名，用于查找对应的标签页（必需）</li>
+                <li><code>body</code>: 请求体数据（可选）</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>常见问题</h2>
+            <h3>1. 请求失败，提示"未找到xxx的页面"</h3>
+            <p>解决方案：确保已打开并登录了目标网站。</p>
+
+            <h3>2. window.proxyRequest is not a function</h3>
+            <p>解决方案：确保等待 proxyReady() 完成后再调用 proxyRequest。</p>
+
+            <h3>3. 跨域错误</h3>
+            <p>解决方案：确保正确指定了 targetDomain 参数。</p>
+        </section>
+    </div>
+</body>
+</html> 
